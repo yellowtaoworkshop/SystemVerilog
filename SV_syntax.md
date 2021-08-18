@@ -128,3 +128,27 @@ the abstract can have follwing type method:
 1. pure virtual
 2. virtual 
 3. nonvirtual 
+
+
+
+## external function 
+
+When you plan to declare a extern virtual function inside the class, and want to implement it outside the class. 
+
+You shouldn’t keep the **extern** and **virtual* key word when implementing 
+
+```verilog
+class A;
+		//Declare 
+		extern virtual function void build_phase(uvm_phase phase);
+endclass
+        
+//implementing 
+//The one with Syntax error 
+virtual function void A:build_phase(uvm_phase phase);
+    
+//The one without syntax error
+function void A::build_phase(uvm_phase phase);  
+      
+```
+
