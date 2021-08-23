@@ -166,4 +166,4 @@ array[idx_D][idx_C][idx_A][idx_B]
 
 See the snapshot below from the book *SystemVerilog for Verification* 
 
-![image-20210823092037669](C:\Users\taohua\AppData\Roaming\Typora\typora-user-images\image-20210823092037669.png)
+![packed array](..\snapshots\packed array.png)
