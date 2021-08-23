@@ -26,7 +26,7 @@
 
   
 
-## interface class
+## Interface Class
 
 1.  What can the interface do?
 
@@ -111,7 +111,7 @@
 
 
 
-## virtual class (called abstract class)
+## Virtual Class (called abstract class)
 
 abstract class can't be create directly.  like 
 
@@ -131,7 +131,7 @@ the abstract can have follwing type method:
 
 
 
-## external function 
+## External Function 
 
 When you plan to declare a extern virtual function inside the class, and want to implement it outside the class. 
 
@@ -152,3 +152,18 @@ function void A::build_phase(uvm_phase phase);
       
 ```
 
+## Packed Array
+
+This section used to reminder me how to use the multiple dimensional packed array. 
+
+```verilog
+//For example, we have such multiple dimensional array
+bit [A-1:0][B-1:0] array[C-1:0][D-1:0]; 
+
+//When you reference this array, each number inside the "[]" maps which dimensionary? 
+array[idx_D][idx_C][idx_A][idx_B]
+```
+
+See the snapshot below from the book *SystemVerilog for Verification* 
+
+![image-20210823092037669](C:\Users\taohua\AppData\Roaming\Typora\typora-user-images\image-20210823092037669.png)
