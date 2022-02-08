@@ -167,3 +167,176 @@ array[idx_D][idx_C][idx_A][idx_B]
 See the snapshot below from the book *SystemVerilog for Verification* 
 
 ![packed array](..\snapshots\packed array.png)
+
+## Assignment patterns 
+
+*Assignment patterns* are used for assignments to describe patterns of assignments to structure fields and
+array elements.
+An assignment pattern specifies a correspondence between a collection of expressions and the fields and
+elements in a data object or data value. An assignment pattern has no self-determined data type, but can be
+used as one of the sides in an assignment-like context (see 10.8) when the other side has a self-determined
+data type. An assignment pattern is built from braces, keys, and expressions and is prefixed with an
+apostrophe. For example:
+
+```verilog
+var int A[N] = '{default:1};
+var integer i = '{31:1, 23:1, 15:1, 8:1, default:0};
+typedef struct {real r, th;} C;
+var C x = '{th:PI/2.0, r:1.0};
+var real y [0:1] = '{0.0, 1.1}, z [0:9] = '{default: 3.1416};
+```
+
+A positional notation without keys can also be used. For example:
+
+```verilog
+var int B[4] = '{a, b, c, d};
+var C y = '{1.0, PI/2.0};
+'{a, b, c, d} = B; //What's that !!!!
+```
+
+When an assignment pattern is used as the left-hand side of an assignment-like context, the positional
+notation shall be required; and each member expression shall have a bit-stream data type that is assignment
+compatible with and has the same number of bits as the data type of the corresponding element on the righthand
+side.
+
+An assignment pattern can be used to construct or deconstruct a structure or array by prefixing the pattern
+with the name of a data type to form an assignment pattern expression. Unlike an assignment pattern, *an
+assignment pattern expression* has a self-determined data type and is not restricted to being one of the sides
+in an assignment-like context. When an assignment pattern expression is used in a right-hand expression, it
+shall yield the value that a variable of the data type would hold if it were initialized using the assignment
+pattern.
+
+```verilog
+typedef logic [1:0] [3:0] T;
+shortint'({T'{1,2}, T'{3,4}}) // yields 16'sh1234
+```
+
+When an assignment pattern expression is used in a left-hand expression, the positional notation shall be
+required; and each member expression shall have a bit-stream data type that is assignment compatible with
+and has the same number of bits as the corresponding element in the data type of the assignment pattern
+expression. If the right-hand expression has a self-determined data type, then it shall be assignment
+compatible with and have the same number of bits as the data type of the assignment pattern expression.
+
+```verilog
+typedef byte U[3];
+var U A = '{1, 2, 3};
+var byte a, b, c;
+U'{a, b, c} = A;
+U'{c, a, b} = '{a+1, b+1, c+1};
+```
+
+### Array assignment patterns 
+
+Concatenation braces are used to construct and deconstruct simple bit vectors. A similar syntax is used to
+support the construction and deconstruction of arrays. The expressions shall match element for element, and
+the braces shall match the array dimensions. Each expression item shall be evaluated in the context of an
+assignment to the type of the corresponding element in the array. In other words, the following examples are
+not required to cause size warnings:
+
+```verilog
+bit unpackedbits [1:0] = '{1,1}; // no size warning required as
+// bit can be set to 1
+int unpackedints [1:0] = '{1'b1, 1'b1}; // no size warning required as
+// int can be set to 1'b1
+```
+
+A syntax resembling replications (see 11.4.12.1) can be used in array assignment patterns as well. Each
+replication shall represent an entire single dimension. 
+
+```verilog
+unpackedbits = '{2 {y}} ; // same as '{y, y}
+int n[1:2][1:3] = '{2{'{3{y}}}}; // same as '{'{y,y,y},'{y,y,y}}
+```
+
+It can sometimes be useful to set array elements to a value without having to keep track of how many
+members there are. This can be done with the default keyword:
+
+```verilog
+initial unpackedints = '{default:2};
+```
+
+For arrays of structures, it is useful to specify one or more matching type keys, as described under structure
+assignment patterns following
+
+```verilog
+struct {int a; time b;} abkey[1:0];
+abkey = '{'{a:1, b:2ns}, '{int:5, time:$time}};
+```
+
+The matching rules are as follows:
+
+- An index:value specifies an explicit value for a keyed element index. The value is evaluated in
+  the context of an assignment to the indexed element and shall be castable to its type. It shall be an
+  error to specify the same index more than once in a single array pattern expression.
+- For type:value, if the element or subarray type of the array matches this type, then each element
+  or subarray that has not already been set by an index key above shall be set to the value. The value
+  shall be castable to the array element or subarray type. Otherwise, if the array is multidimensional,
+  then there is a recursive descent into each subarray of the array using the rules in this subclause and
+  the type and default keys. Otherwise, if the array is an array of structures, there is a recursive descent
+  into each element of the array using the rules for structure assignment patterns and the type and
+  default keys. If more than one type matches the same element, the last value shall be used.
+- The default:value applies to elements or subarrays that are not matched by either index or type
+  key. If the type of the element or subarray is a simple bit vector type, matches the self-determined
+  type of the value, or is not an array or structure type, then the value is evaluated in the context of
+  each assignment to an element or subarray by the default and shall be castable to the type of the
+  element or subarray; otherwise, an error is generated. For unmatched subarrays, the type and default
+  specifiers are applied recursively according to the rules in this subclause to each of its elements or
+  subarrays. For unmatched structure elements, the type and default keys are applied to the element
+  according to the rules for structures.
+
+### Structure assignment patterns
+
+A structure can be constructed and deconstructed with a structure assignment pattern built from member
+expressions using braces and commas, with the members in declaration order. Replication operators can be
+used to set the values for the exact number of members. Each member expression shall be evaluated in the
+context of an assignment to the type of the corresponding member in the structure. It can also be built with
+the names of the members.
+
+```verilog
+module mod1;
+typedef struct {
+int x;
+int y;
+} st;
+st s1;
+int k = 1;
+initial begin
+#1 s1 = '{1, 2+k}; // by position
+#1 $display( s1.x, s1.y);
+#1 s1 = '{x:2, y:3+k}; // by name
+#1 $display( s1.x, s1.y);
+#1 $finish;
+end
+endmodule
+```
+
+It can sometimes be useful to set structure members to a value without having to keep track of how many
+members there are or what the names are. This can be done with the default keyword: (same with the array)
+
+```verlog
+initial s1 = '{default:2}; // sets x and y to 2
+```
+
+The '{member:value} or '{data_type: default_value} syntax can also be used:
+
+```verilog
+ab abkey[1:0] = '{'{a:1, b:1.0}, '{int:2, shortreal:2.0}};
+```
+
+The matching rules are as follows:
+
+- A member:value specifies an explicit value for a named member of the structure. The named
+  member shall be at the top level of the structure; a member with the same name in some level of
+  substructure shall not be set. The value shall be castable to the member type and is evaluated in the
+  context of an assignment to the named member; otherwise, an error is generated.
+-  The type:value specifies an explicit value for each field in the structure whose type matches the
+  type (see 6.22.1) and has not been set by a field name key above. If the same type key is mentioned
+  more than once, the last value is used. The value is evaluated in the context of an assignment to the
+  matching type.
+- The default:value applies to members that are not matched by either member name or type key.
+  If the member type is a simple bit vector type, matches the self-determined type of the value, or is
+  not an array or structure type, then the value is evaluated in the context of each assignment to a
+  member by the default and shall be castable to the member type; otherwise, an error is generated.
+  For unmatched structure members, the type and default specifiers are applied recursively according
+  to the rules in this subclause to each member of the substructure. For unmatched array members, the
+  type and default keys are applied to the array according to the rules for arrays.
