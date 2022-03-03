@@ -161,7 +161,7 @@ This section used to reminder me how to use the multiple dimensional packed arra
 bit [A-1:0][B-1:0] array[C-1:0][D-1:0]; 
 
 //When you reference this array, each number inside the "[]" maps which dimensionary? 
-array[idx_D][idx_C][idx_A][idx_B]
+array[idx_C][idx_D][idx_A][idx_B]
 ```
 
 See the snapshot below from the book *SystemVerilog for Verification* 
@@ -340,3 +340,19 @@ The matching rules are as follows:
   For unmatched structure members, the type and default specifiers are applied recursively according
   to the rules in this subclause to each member of the substructure. For unmatched array members, the
   type and default keys are applied to the array according to the rules for arrays.
+
+  ## "%m" Hierarchical name format
+The %m format specifier does not accept an argument. Instead, it causes the display task to print the hierarchical name of the design element, subroutine, **named block**, or labeled statement that invokes the **system task** containing the format specifier. This is useful when there are many instances of the module that calls the system task. One obvious application is timing check messages in a flip-flop or latch module; the %m format specifier pinpoints the module instance responsible for generating the timing check message. 
+
+Note: regarding the usage in the unnamed block. If there is only one unnamed block, when using "%m", it only print the hierarchy into the module.  But if there is more than one unnamed block, when using the "%m" in both the block. there will be one hierarchy with *uname* 
+```verilog 
+module test(); 
+initial begin 
+	$dispaly("block one: %m"); //It will print the "block one: test"
+end
+
+initial begin
+	$dispaly("block two: %m"); //It may prin the "block two: test.$unamed"
+end
+endmodule 
+```
