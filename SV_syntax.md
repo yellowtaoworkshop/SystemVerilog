@@ -356,3 +356,10 @@ initial begin
 end
 endmodule 
 ```
+
+### How to delay variable time with time unit
+``` verilog 
+
+#(time_varible * 1ns);
+
+```
